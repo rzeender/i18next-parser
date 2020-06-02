@@ -90,7 +90,7 @@ export default class i18nTransform extends Transform {
       key = key.replace(/\\t/g, '\t')
       key = key.replace(/\\\\/g, '\\')
       entry.key = entry.namespace + this.options.keySeparator + key
-
+      
       this.addEntry(entry)
     }
 

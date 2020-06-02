@@ -4,6 +4,7 @@ var _htmlLexer = require('./lexers/html-lexer');var _htmlLexer2 = _interopRequir
 var _javascriptLexer = require('./lexers/javascript-lexer');var _javascriptLexer2 = _interopRequireDefault(_javascriptLexer);
 var _jsxLexer = require('./lexers/jsx-lexer');var _jsxLexer2 = _interopRequireDefault(_jsxLexer);
 var _typescriptLexer = require('./lexers/typescript-lexer');var _typescriptLexer2 = _interopRequireDefault(_typescriptLexer);
+var _jsonLexer = require('./lexers/json-lexer');var _jsonLexer2 = _interopRequireDefault(_jsonLexer);
 var _path = require('path');var _path2 = _interopRequireDefault(_path);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _possibleConstructorReturn(self, call) {if (!self) {throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return call && (typeof call === "object" || typeof call === "function") ? call : self;}function _inherits(subClass, superClass) {if (typeof superClass !== "function" && superClass !== null) {throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;}
 
 var lexers = {
@@ -16,6 +17,7 @@ var lexers = {
   js: ['JavascriptLexer'],
   jsx: ['JsxLexer'],
   mjs: ['JavascriptLexer'],
+  json: ['JSONLexer'],
 
   ts: ['TypescriptLexer'],
   tsx: ['TypescriptLexer'],
@@ -28,7 +30,8 @@ var lexersMap = {
   HTMLLexer: _htmlLexer2.default,
   JavascriptLexer: _javascriptLexer2.default,
   JsxLexer: _jsxLexer2.default,
-  TypescriptLexer: _typescriptLexer2.default };var
+  TypescriptLexer: _typescriptLexer2.default,
+  JSONLexer: _jsonLexer2.default };var
 
 
 Parser = function (_EventEmitter) {_inherits(Parser, _EventEmitter);

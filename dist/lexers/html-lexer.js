@@ -5,18 +5,69 @@ HTMLLexer = function (_BaseLexer) {_inherits(HTMLLexer, _BaseLexer);
   function HTMLLexer() {var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};_classCallCheck(this, HTMLLexer);var _this = _possibleConstructorReturn(this, (HTMLLexer.__proto__ || Object.getPrototypeOf(HTMLLexer)).call(this,
     options));
 
-    _this.attr = options.attr || 'data-i18n';
+    _this.attr = options.attr || 'data-bind';
     _this.optionAttr = options.optionAttr || 'data-i18n-options';return _this;
-  }_createClass(HTMLLexer, [{ key: 'extract', value: function extract(
+  }_createClass(HTMLLexer, [{ key: 'parse', value: function parse(
+
+    str) {
+      var result = [],item = '',depth = 0;
+
+      function push() {if (item) result.push(item);item = '';}
+
+      for (var i = 0, c; c = str[i], i < str.length; i++) {
+        if (!depth && c === ',') push();else
+        {
+          item += c;
+          if (c === '{') depth++;
+          if (c === '}') depth--;
+        }
+      }
+
+      push();
+      return result;
+    } }, { key: 'extract', value: function extract(
 
     content) {var _this2 = this;
       var that = this;
-      var $ = _cheerio2.default.load(content);
+      var $ = _cheerio2.default.load(content, {
+        xml: {
+          normalizeWhitespace: true } });
+
+
       $('[' + that.attr + ']').each(function (index, node) {
+        var attr = node.attribs[that.attr];
+        var pattern = /("|')?i18n("|')?\s*?:/;
+        var htmlTag = /^\[[a-zA-Z0-9_-]*\]/;
+
+        if (!pattern.test(attr)) {
+          return;
+        } else if (attr.trim().startsWith('{') && attr.trim().endsWith('}')) {
+          attr = attr.trim().substr(1).slice(0, -1).trim();
+        }
+
+        var i18nChunk = _this2.parse(attr).filter(function (x) {return pattern.test(x);}).shift();
+        var arr = i18nChunk.split(pattern);
+
+        var expression = arr[arr.length - 1].trim();
+        var rawKey = void 0;
+        var val = void 0;
+
+        try {
+          val = new Function('return (' + expression + ');')();
+        } catch (e) {}
+
+        if (typeof val === 'string') {
+          rawKey = val;
+        } else if (Object.prototype.toString.call(val) === '[object Object]') {
+          rawKey = val.key;
+        } else {
+          return;
+        }
+
         var $node = _cheerio2.default.load(node);
 
         // the attribute can hold multiple keys
-        var keys = node.attribs[that.attr].split(';');
+        var keys = rawKey.split(';');
         var options = node.attribs[that.optionAttr];
 
         if (options) {
@@ -27,14 +78,15 @@ HTMLLexer = function (_BaseLexer) {_inherits(HTMLLexer, _BaseLexer);
         }var _iteratorNormalCompletion = true;var _didIteratorError = false;var _iteratorError = undefined;try {
 
           for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {var key = _step.value;
+            var isHtml = new RegExp(htmlTag).test(key);
             // remove any leading [] in the key
-            key = key.replace(/^\[[a-zA-Z0-9_-]*\]/, '');
+            key = key.replace(htmlTag, '');
 
             // if empty grab innerHTML from regex
             key = key || $node.text();
 
             if (key) {
-              _this2.keys.push(_extends({}, options, { key: key }));
+              _this2.keys.push(_extends({}, options, { key: key, defaultValue: ((isHtml ? $(node).html() : $node.text()) || '').trim() }));
             }
           }} catch (err) {_didIteratorError = true;_iteratorError = err;} finally {try {if (!_iteratorNormalCompletion && _iterator.return) {_iterator.return();}} finally {if (_didIteratorError) {throw _iteratorError;}}}
       });

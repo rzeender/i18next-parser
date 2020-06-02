@@ -72,6 +72,7 @@ export default class JavascriptLexer extends BaseLexer {
         entry.key = concatenatedString
       }
       else {
+        console.log(keyArgument);
         if (keyArgument.type === 'Identifier') {
           this.emit('warning', `Key is not a string literal: ${keyArgument.name}`)
         }

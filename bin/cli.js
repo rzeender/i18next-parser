@@ -95,7 +95,7 @@ if (!program.silent) {
 
 var count = 0
 
-vfs.src(globs)
+vfs.src(globs, { allowEmpty: true })
 .pipe(sort())
 .pipe(
   new i18nTransform(config)
