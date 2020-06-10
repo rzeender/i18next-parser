@@ -1,4 +1,5 @@
 'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _extends = Object.assign || function (target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i];for (var key in source) {if (Object.prototype.hasOwnProperty.call(source, key)) {target[key] = source[key];}}}return target;};var _createClass = function () {function defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}return function (Constructor, protoProps, staticProps) {if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;};}();var _baseLexer = require('./base-lexer');var _baseLexer2 = _interopRequireDefault(_baseLexer);
+var _javascriptLexer = require('./javascript-lexer');var _javascriptLexer2 = _interopRequireDefault(_javascriptLexer);
 var _cheerio = require('cheerio');var _cheerio2 = _interopRequireDefault(_cheerio);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _possibleConstructorReturn(self, call) {if (!self) {throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return call && (typeof call === "object" || typeof call === "function") ? call : self;}function _inherits(subClass, superClass) {if (typeof superClass !== "function" && superClass !== null) {throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;}var
 
 HTMLLexer = function (_BaseLexer) {_inherits(HTMLLexer, _BaseLexer);
@@ -33,6 +34,24 @@ HTMLLexer = function (_BaseLexer) {_inherits(HTMLLexer, _BaseLexer);
         xml: {
           normalizeWhitespace: true } });
 
+
+
+      var $$ = _cheerio2.default.load(content);
+
+      $$('script[type="text/javascript"]:not([src])').each(function (index, node) {
+        var $node = $(node);
+        $node[0].children.forEach(function (x) {
+          var jsLexer = new _javascriptLexer2.default({ sourceType: 'script' });
+          //strip mustache tags
+          var sanitized = x.data.
+          replace(/{{{(#|\^).*?}}}|{{(#|\^).*?}}/g, '').
+          replace(/{{{\/.*?}}}|{{\/.*?}}/g, '').
+          replace(/({{{[^#\^]*?}}}|{{[^#\^]*?}})/g, undefined);
+
+          var keys = jsLexer.extract(sanitized);
+          _this2.keys = _this2.keys.concat(keys);
+        });
+      });
 
       $('[' + that.attr + ']').each(function (index, node) {
         var attr = node.attribs[that.attr];

@@ -1,4 +1,5 @@
-import BaseLexer from './base-lexer'
+import BaseLexer from './base-lexer';
+import JavascriptLexer from './javascript-lexer';
 import cheerio from 'cheerio'
 
 export default class HTMLLexer extends BaseLexer {
@@ -34,6 +35,24 @@ export default class HTMLLexer extends BaseLexer {
         normalizeWhitespace: true,
       }
     })
+
+    const $$ = cheerio.load(content);
+
+    $$('script[type="text/javascript"]:not([src])').each((index, node) => {
+      const $node = $(node);
+      $node[0].children.forEach(x => {
+        const jsLexer = new JavascriptLexer({sourceType: 'script'});
+        //strip mustache tags
+        let sanitized = x.data
+          .replace(/{{{(#|\^).*?}}}|{{(#|\^).*?}}/g, '')
+          .replace(/{{{\/.*?}}}|{{\/.*?}}/g, '')
+          .replace(/({{{[^#\^]*?}}}|{{[^#\^]*?}})/g, undefined);
+
+        const keys = jsLexer.extract(sanitized);
+        this.keys = this.keys.concat(keys);
+      });
+    })
+
     $(`[${that.attr}]`).each((index, node) => {
       let attr = node.attribs[that.attr];
       const pattern = /("|')?i18n("|')?\s*?:/;      
