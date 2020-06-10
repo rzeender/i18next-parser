@@ -21,6 +21,7 @@ JavascriptLexer = function (_BaseLexer) {_inherits(JavascriptLexer, _BaseLexer);
 
 
     _this.functions = options.functions || ['t'];
+    _this.namespace = options.namespace || 'i18n';
     _this.attr = options.attr || 'i18nKey';
 
     _this.acorn = acorn;
@@ -53,8 +54,9 @@ JavascriptLexer = function (_BaseLexer) {_inherits(JavascriptLexer, _BaseLexer);
       var entry = {};
       var isTranslationFunction =
       node.callee && (
-      this.functions.includes(node.callee.name) ||
-      node.callee.property && this.functions.includes(node.callee.property.name));
+      !this.namespace && this.functions.includes(node.callee.name) ||
+      node.callee.property && this.functions.includes(node.callee.property.name) && (
+      !this.namespace || node.callee.object && node.callee.object.name === this.namespace));
 
 
       if (isTranslationFunction) {
