@@ -21,8 +21,8 @@ export default class JavascriptLexer extends BaseLexer {
     }
 
     this.functions = options.functions || ['t']
-    this.namespace = options.namespace || 'i18n';
     this.attr = options.attr || 'i18nKey'
+    this.namespaces = options.namespaces;
 
     this.acorn = acorn
     this.WalkerBase = WalkerBase
@@ -54,9 +54,9 @@ export default class JavascriptLexer extends BaseLexer {
     const entry = {}
     const isTranslationFunction = (
       node.callee && (
-        (!this.namespace && this.functions.includes(node.callee.name)) ||
+        (!this.namespaces && this.functions.includes(node.callee.name)) ||
         (node.callee.property && this.functions.includes(node.callee.property.name) &&
-        (!this.namespace || (node.callee.object && node.callee.object.name === this.namespace)))
+        (!this.namespaces || (node.callee.object && this.namespaces.includes(node.callee.object.name))))
       )
     )
     if (isTranslationFunction) {

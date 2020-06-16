@@ -8,6 +8,10 @@ export default class HTMLLexer extends BaseLexer {
 
     this.attr = options.attr || 'data-bind'
     this.optionAttr = options.optionAttr || 'data-i18n-options'
+
+    if(options.js) {
+      this.jsLexer = () => new JavascriptLexer(Object.assign({sourceType: 'script'}, options.js));
+    }
   }
 
   parse(str) {
@@ -36,22 +40,23 @@ export default class HTMLLexer extends BaseLexer {
       }
     })
 
-    const $$ = cheerio.load(content);
+    if(that.jsLexer) {
+      const $$ = cheerio.load(content);
 
-    $$('script[type="text/javascript"]:not([src])').each((index, node) => {
-      const $node = $(node);
-      $node[0].children.forEach(x => {
-        const jsLexer = new JavascriptLexer({sourceType: 'script'});
-        //strip mustache tags
-        let sanitized = x.data
-          .replace(/{{{(#|\^).*?}}}|{{(#|\^).*?}}/g, '')
-          .replace(/{{{\/.*?}}}|{{\/.*?}}/g, '')
-          .replace(/({{{[^#\^]*?}}}|{{[^#\^]*?}})/g, undefined);
+      $$('script[type="text/javascript"]:not([src])').each((index, node) => {
+        const $node = $(node);
+        $node[0].children.forEach(x => {
+          //strip mustache tags
+          let sanitized = x.data
+            .replace(/{{{(#|\^).*?}}}|{{(#|\^).*?}}/g, '')
+            .replace(/{{{\/.*?}}}|{{\/.*?}}/g, '')
+            .replace(/({{{[^#\^]*?}}}|{{[^#\^]*?}})/g, undefined);
 
-        const keys = jsLexer.extract(sanitized);
-        this.keys = this.keys.concat(keys);
-      });
-    })
+          const keys = that.jsLexer().extract(sanitized);
+          that.keys = that.keys.concat(keys);
+        });
+      })
+    }
 
     $(`[${that.attr}]`).each((index, node) => {
       let attr = node.attribs[that.attr];

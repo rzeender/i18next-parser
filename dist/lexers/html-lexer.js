@@ -7,7 +7,11 @@ HTMLLexer = function (_BaseLexer) {_inherits(HTMLLexer, _BaseLexer);
     options));
 
     _this.attr = options.attr || 'data-bind';
-    _this.optionAttr = options.optionAttr || 'data-i18n-options';return _this;
+    _this.optionAttr = options.optionAttr || 'data-i18n-options';
+
+    if (options.js) {
+      _this.jsLexer = function () {return new _javascriptLexer2.default(Object.assign({ sourceType: 'script' }, options.js));};
+    }return _this;
   }_createClass(HTMLLexer, [{ key: 'parse', value: function parse(
 
     str) {
@@ -36,22 +40,23 @@ HTMLLexer = function (_BaseLexer) {_inherits(HTMLLexer, _BaseLexer);
 
 
 
-      var $$ = _cheerio2.default.load(content);
+      if (that.jsLexer) {
+        var $$ = _cheerio2.default.load(content);
 
-      $$('script[type="text/javascript"]:not([src])').each(function (index, node) {
-        var $node = $(node);
-        $node[0].children.forEach(function (x) {
-          var jsLexer = new _javascriptLexer2.default({ sourceType: 'script' });
-          //strip mustache tags
-          var sanitized = x.data.
-          replace(/{{{(#|\^).*?}}}|{{(#|\^).*?}}/g, '').
-          replace(/{{{\/.*?}}}|{{\/.*?}}/g, '').
-          replace(/({{{[^#\^]*?}}}|{{[^#\^]*?}})/g, undefined);
+        $$('script[type="text/javascript"]:not([src])').each(function (index, node) {
+          var $node = $(node);
+          $node[0].children.forEach(function (x) {
+            //strip mustache tags
+            var sanitized = x.data.
+            replace(/{{{(#|\^).*?}}}|{{(#|\^).*?}}/g, '').
+            replace(/{{{\/.*?}}}|{{\/.*?}}/g, '').
+            replace(/({{{[^#\^]*?}}}|{{[^#\^]*?}})/g, undefined);
 
-          var keys = jsLexer.extract(sanitized);
-          _this2.keys = _this2.keys.concat(keys);
+            var keys = that.jsLexer().extract(sanitized);
+            that.keys = that.keys.concat(keys);
+          });
         });
-      });
+      }
 
       $('[' + that.attr + ']').each(function (index, node) {
         var attr = node.attribs[that.attr];
